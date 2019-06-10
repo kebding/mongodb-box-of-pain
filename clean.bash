@@ -6,4 +6,4 @@
 pkill mongo
 sleep 1
 rm -rf replica*
-rm rsconf.js
+rm -f rsconf.js
