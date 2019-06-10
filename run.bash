@@ -18,14 +18,6 @@ NUM_REPLICAS=$2
 let FIRST_PORT=$3
 let PORT=$FIRST_PORT
 
-# install mongodb, if necessary
-echo "installing mongodb (if necessary)"
-apt --assume-yes install mongodb
-
-# install YCSB test
-echo "installing YCSB benchmark test"
-(git clone git://github.com/brianfrankcooper/YCSB.git && cd YCSB && mvn clean package && cd ../)
-
 # launch Box of Pain
 echo "starting Box of Pain and mongod instances"
 PAIN_CMD="$PAINBOX -e mongod,--replSet,rs0,--port,$PORT,--dbpath,./replica0,--smallfiles,--oplogSize,128,--logpath,./replica0/replica0.log"
