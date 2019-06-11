@@ -7,9 +7,10 @@
 # $2 = number of replicas in the replica set
 # $3 = port number to use. each replica will use the next port, e.g.
 #    if the first port is 11111, the replicas will use ports 11111, 11112, etc.
+# $4 = filepath to the ycsb directory, e.g. ./ycsb-0.15.0
 
-if [[ $# -lt 3 ]]; then
-    echo "USAGE: $0 painbox-filepath num-replicas first-port"
+if [[ $# -lt 4 ]]; then
+    echo "USAGE: $0 painbox-filepath num-replicas first-port ycsb-dirpath"
     exit 1
 fi
 
@@ -17,19 +18,29 @@ PAINBOX=$1
 NUM_REPLICAS=$2
 let FIRST_PORT=$3
 let PORT=$FIRST_PORT
+YCSB_DIR=$4
 
-# launch Box of Pain
-echo "starting Box of Pain and mongod instances"
+# generate Box of Pain and YCSB commands
 PAIN_CMD="$PAINBOX -e mongod,--replSet,rs0,--port,$PORT,--dbpath,./replica0,--smallfiles,--oplogSize,128,--logpath,./replica0/replica0.log"
+
+YCSB_LOAD_CMD="$YCSB_DIR/bin/ycsb.sh load mongodb -s -P $YCSB_DIR/workloads/workloada -p mongodb.url=mongodb://localhost:$PORT"
+
+YCSB_RUN_CMD="$YCSB_DIR/bin/ycsb.sh run mongodb -s -P $YCSB_DIR/workloads/workloada -p mongodb.url=mongodb://localhost:$PORT"
 
 mkdir replica0
 for (( i = 1; i < $NUM_REPLICAS; i++ )); do
     let PORT++
     mkdir replica$i
     PAIN_CMD="$PAIN_CMD -e mongod,--replSet,rs0,--port,$PORT,--dbpath,./replica$i,--smallfiles,--oplogSize,128,--logpath,./replica$i/replica$i.log"
+    YCSB_LOAD_CMD="$YCSB_LOAD_CMD,localhost:$PORT"
+    YCSB_RUN_CMD="$YCSB_RUN_CMD,localhost:$PORT"
 done
 
-echo "running command: $PAIN_CMD"
+# finish YCSB commands
+YCSB_LOAD_CMD="$YCSB_LOAD_CMD/ycsb?replicaSet=rs0"
+YCSB_RUN_CMD="$YCSB_RUN_CMD/ycsb?replicaSet=rs0"
+
+echo "launching Box of Pain: $PAIN_CMD"
 $PAIN_CMD &> pain.log & 
 
 # wait while the mongod instances launch
@@ -43,3 +54,10 @@ bash create_rsconf.bash $NUM_REPLICAS $FIRST_PORT
 # connect to a replica
 echo "initiating the replica set"
 mongo localhost:$FIRST_PORT rsconf.js
+
+# load and run the YCSB workload
+echo "running YCSB load: $YCSB_LOAD_CMD"
+$YCSB_LOAD_CMD &> ycsb_load.out
+
+echo "running YCSB: $YCSB_RUN_CMD"
+$YCSB_RUN_CMD &> ycsb_run.out
