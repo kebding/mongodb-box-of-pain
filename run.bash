@@ -54,13 +54,14 @@ $PAIN_CMD &> pain.log &
 echo "waiting 120s for mongod instances to launch"
 sleep 120
 
-# connect to a replica
-echo "initiating the replica set"
-#mongo localhost:$FIRST_PORT rsconf.js
-
+echo "waiting 30s for replica set config to settle"
+sleep 30
 # load and run the YCSB workload
 echo "running YCSB load: $YCSB_LOAD_CMD"
 $YCSB_LOAD_CMD &> ycsb_load.out
 
+sleep 10
 echo "running YCSB: $YCSB_RUN_CMD"
 $YCSB_RUN_CMD &> ycsb_run.out
+
+sleep 240
