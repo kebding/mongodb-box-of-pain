@@ -8,6 +8,4 @@ echo "installing mongodb"
 apt --assume-yes install mongodb
 
 echo "installing YCSB benchmark test"
-(git clone git://github.com/brianfrankcooper/YCSB.git && \
-    cd YCSB && mvn clean package; cd ../)
-
+curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.15.0/ycsb-0.15.0.tar.gz && tar xfvz ycsb-0.15.0.tar.gz
