@@ -20,6 +20,11 @@ let FIRST_PORT=$3
 let PORT=$FIRST_PORT
 YCSB_DIR=$4
 
+
+# generate the replica set configuration script
+echo "generating rsconf.js"
+bash create_rsconf.bash $NUM_REPLICAS $FIRST_PORT
+
 # generate Box of Pain and YCSB commands
 PAIN_CMD="$PAINBOX -e mongod,--replSet,rs0,--port,$PORT,--dbpath,./replica0,--smallfiles,--oplogSize,128,--logpath,./replica0/replica0.log"
 
@@ -36,9 +41,11 @@ for (( i = 1; i < $NUM_REPLICAS; i++ )); do
     YCSB_RUN_CMD="$YCSB_RUN_CMD,localhost:$PORT"
 done
 
-# finish YCSB commands
+PAIN_CMD="$PAIN_CMD -e mongo,localhost:$FIRST_PORT,rsconf.js,!120"
 YCSB_LOAD_CMD="$YCSB_LOAD_CMD/ycsb?replicaSet=rs0"
 YCSB_RUN_CMD="$YCSB_RUN_CMD/ycsb?replicaSet=rs0"
+
+
 
 echo "launching Box of Pain: $PAIN_CMD"
 $PAIN_CMD &> pain.log & 
@@ -47,13 +54,9 @@ $PAIN_CMD &> pain.log &
 echo "waiting 120s for mongod instances to launch"
 sleep 120
 
-# generate the replica set configuration script
-echo "generating rsconf.js"
-bash create_rsconf.bash $NUM_REPLICAS $FIRST_PORT
-
 # connect to a replica
 echo "initiating the replica set"
-mongo localhost:$FIRST_PORT rsconf.js
+#mongo localhost:$FIRST_PORT rsconf.js
 
 # load and run the YCSB workload
 echo "running YCSB load: $YCSB_LOAD_CMD"
