@@ -7,7 +7,7 @@
 # priority=0, indicating that they are ineligible to become the primary.
 
 if [[ $# -lt 2 ]]; then
-    echo "USAGE: bash create_rsconf.bash num-replicas first-port"
+    echo "USAGE: bash $0 num-replicas first-port"
     exit 1
 fi
 
