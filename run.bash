@@ -78,7 +78,6 @@ AGREE="true"
 for (( i = 0; i < $NUM_REPLICAS; i++ )); do
     QUERY_OUT=$(mongo localhost:$PORT query.js --quiet)
     echo "replica$i: output = $QUERY_OUT"
-    echo "replica$i: output = $QUERY_OUT" > replica$i.out
     if [[ -z $(grep '"key" : "foo"' <(echo $QUERY_OUT)) || -z $(grep '"value" : "bar"' <(echo $QUERY_OUT)) ]];
     then
         echo "durability test failed for replica $i"
