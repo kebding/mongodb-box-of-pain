@@ -41,7 +41,7 @@ for (( i = 1; i < $NUM_REPLICAS; i++ )); do
     YCSB_RUN_CMD="$YCSB_RUN_CMD,localhost:$PORT"
 done
 
-PAIN_CMD="$PAIN_CMD -e mongo,localhost:$FIRST_PORT,rsconf.js,!120"
+PAIN_CMD="$PAIN_CMD -e mongo,localhost:$FIRST_PORT,rsconf.js,!60"
 YCSB_LOAD_CMD="$YCSB_LOAD_CMD/ycsb?replicaSet=rs0"
 YCSB_RUN_CMD="$YCSB_RUN_CMD/ycsb?replicaSet=rs0"
 
@@ -51,17 +51,51 @@ echo "launching Box of Pain: $PAIN_CMD"
 $PAIN_CMD &> pain.log & 
 
 # wait while the mongod instances launch
-echo "waiting 120s for mongod instances to launch"
-sleep 120
+echo "waiting 60s for mongod instances to launch"
+sleep 60
 
 echo "waiting 30s for replica set config to settle"
 sleep 30
+
+# inserting some data before the workload test
+echo "inserting a document to check later for durability"
+mongo localhost:$FIRST_PORT insert.js --quiet
+sleep 1
+
 # load and run the YCSB workload
 echo "running YCSB load: $YCSB_LOAD_CMD"
 $YCSB_LOAD_CMD &> ycsb_load.out
 
-sleep 10
+sleep 5
 echo "running YCSB: $YCSB_RUN_CMD"
 $YCSB_RUN_CMD &> ycsb_run.out
+sleep 1
 
-sleep 240
+# check if the previously-stored document still exists and that the replicas
+# agree on its value
+let PORT=$FIRST_PORT
+AGREE="true"
+for (( i = 0; i < $NUM_REPLICAS; i++ )); do
+    QUERY_OUT=$(mongo localhost:$PORT query.js --quiet)
+    echo "replica$i: output = $QUERY_OUT"
+    echo "replica$i: output = $QUERY_OUT" > replica$i.out
+    if [[ -z $(grep '"key" : "foo"' <(echo $QUERY_OUT)) || -z $(grep '"value" : "bar"' <(echo $QUERY_OUT)) ]];
+    then
+        echo "durability test failed for replica $i"
+    else
+        echo "durability test passed for replica $i"
+    fi
+    if [[ $i -gt 1 ]]; then
+        if [[ $PREV_QUERY_OUT != $QUERY_OUT ]]; then
+            AGREE="false"
+        fi
+    fi
+    let PORT++
+    PREV_QUERY_OUT=$QUERY_OUT
+done
+
+if [[ $AGREE == "true" ]]; then
+    echo "all replicas agreed on the value"
+else
+    echo "not all replicas agreed on the value"
+fi

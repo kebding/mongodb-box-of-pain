@@ -1,1 +1,1 @@
-db.durabilityTest.insertOne({key: "foo", value: "bar"})
+db.durabilityTest.insert({key: "foo", value: "bar"})
