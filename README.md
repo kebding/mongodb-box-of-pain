@@ -7,6 +7,10 @@ output is sent to a file `pain.log` in the working directory. Each replica will
 be given its own subdirectory of the working directory to store its information
 in, such as the journal and its log.
 
+PREREQUISITES: You must have Box of Pain installed. As of the time of writing, 
+Box of Pain is not publicly available but should be "soon" according to its 
+creators.
+
 TO SETUP: Simply run `bash setup.bash` from within the home directory of this
 repository.  If you do not have mongodb installed, the script will require root
 privileges to install it.
