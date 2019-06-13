@@ -1,7 +1,7 @@
 # box-of-pain-mongodb 
 This repository is for using Box of Pain on a Mongodb setup. It will run Box of
 Pain on a specified number of mongod instances configured as a single replica
-set and run the (YCSB)[https://github.com/brianfrankcooper/YCSB] workload A test
+set and run the [YCSB](https://github.com/brianfrankcooper/YCSB) workload A test
 (50% reads, 50% writes). Box of Pain traces the execution of the system and its
 output is sent to a file `pain.log` in the working directory. Each replica will
 be given its own subdirectory of the working directory to store its information
