@@ -1,11 +1,13 @@
 # box-of-pain-mongodb 
-This repository is for using Box of Pain on a Mongodb setup. It will run Box of
-Pain on a specified number of mongod instances configured as a single replica
-set and run the [YCSB](https://github.com/brianfrankcooper/YCSB) workload A test
-(50% reads, 50% writes). Box of Pain traces the execution of the system and its
-output is sent to a file `pain.log` in the working directory. Each replica will
-be given its own subdirectory of the working directory to store its information
-in, such as the journal and its log.
+This repository is for using [Box of
+Pain](https://techxplore.com/news/2019-05-pain-tracer-fault-injector.html) on a
+Mongodb setup. It will run Box of Pain on a specified number of mongod
+instances configured as a single replica set and run the
+[YCSB](https://github.com/brianfrankcooper/YCSB) workload A test (50% reads,
+50% writes). Box of Pain traces the execution of the system and its output is
+sent to a file `pain.log` in the working directory. Each replica will be given
+its own subdirectory of the working directory to store its information in, such
+as the journal and its log.
 
 PREREQUISITES: You must have Box of Pain installed. As of the time of writing, 
 Box of Pain is not publicly available but should be "soon" according to its 
